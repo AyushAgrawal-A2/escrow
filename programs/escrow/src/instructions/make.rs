@@ -4,7 +4,7 @@ use anchor_spl::{
     token_interface::{self, Mint, TokenAccount, TokenInterface},
 };
 
-use crate::{state::Escrow, ESCROW_SEED};
+use crate::{error::EscrowError, state::Escrow, ESCROW_SEED};
 
 #[derive(Accounts)]
 #[instruction(id: u64)]
@@ -54,6 +54,9 @@ pub struct Make<'info> {
 }
 
 pub fn handle_make(ctx: Context<Make>, _id: u64, amount: u64, receive: u64) -> Result<()> {
+    require_gt!(amount, 0, EscrowError::InvalidAmount);
+    require_gt!(receive, 0, EscrowError::InvalidAmount);
+
     token_interface::transfer_checked(
         CpiContext::new(
             ctx.accounts.token_program.key(),
